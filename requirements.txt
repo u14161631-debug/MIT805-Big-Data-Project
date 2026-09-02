@@ -1,0 +1,7 @@
+# MIT 805 Part 1 - HVFHV EDA notebook dependencies
+# Install with: pip install -r requirements.txt
+polars>=1.0          # Arrow-backed DataFrame engine with native Parquet reader
+numpy>=1.24
+matplotlib>=3.7
+requests>=2.31
+jupyter>=1.0         # local notebook execution (not needed on Colab)
