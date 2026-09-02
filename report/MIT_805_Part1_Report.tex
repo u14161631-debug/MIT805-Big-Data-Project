@@ -1,0 +1,385 @@
+\documentclass[10pt,twocolumn]{article}
+
+% Packages
+\usepackage[a4paper,margin=0.7in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{amssymb}
+
+\setlength{\columnsep}{0.28in}
+\setlength{\parskip}{3pt}
+
+\graphicspath{{figures/}}
+
+\hypersetup{
+    colorlinks=true,
+    urlcolor=blue,
+    linkcolor=black
+}
+
+\captionsetup{
+    font=small,
+    labelfont=bf
+}
+
+\titlespacing*{\section}{0pt}{6pt}{2pt}
+\titleformat{\section}
+{\normalfont\large\bfseries}
+{\thesection.}{0.5em}{}
+
+\begin{document}
+
+\twocolumn[{%
+\centering
+{\LARGE\bfseries MIT 805 Big Data Semester Project -- Part 1}\par
+\vspace{3pt}
+
+{\large NYC TLC High-Volume For-Hire Vehicle Trip Records}\par
+\vspace{6pt}
+
+{\normalsize
+\textbf{Group [NN]} \quad | \quad
+[Member 1 Name] ([Student No.]) \quad
+[Member 2 Name] ([Student No.])
+}\par
+\vspace{3pt}
+
+{\small
+GitHub:
+\url{https://github.com/[user]/[repo]}
+}\par
+
+\vspace{6pt}
+\rule{\textwidth}{0.4pt}
+\vspace{8pt}
+}]
+
+% ============================================================
+\section{Dataset and source}
+
+This project uses the New York City Taxi and Limousine Commission
+(NYC TLC) High-Volume For-Hire Vehicle (HVFHV) Trip Record Data.
+HVFHV records contain trips reported to the TLC by licensed
+high-volume for-hire vehicle bases. The dataset was selected because
+it provides a large public source of urban mobility data and includes
+information that can be used to study when and where trips occur,
+trip characteristics, fares and operator activity.
+
+The data is published by the NYC TLC as monthly Parquet files.
+Fields include request, pickup and drop-off times, pickup and
+drop-off location IDs, trip distance, trip time, base passenger
+fare, driver pay, tips, tolls, operator codes and service flags
+\cite{tlc,dict}.
+
+The data files are not stored in the GitHub repository because of
+their size. Instead, the repository provides the source and the
+notebook used to identify and access the required files.
+
+% ============================================================
+\section{Dataset size}
+
+The sizes of the available HVFHV files were checked programmatically
+using the file information returned by the TLC server. This was done
+instead of estimating the size of the dataset.
+
+The raw collection contains \textbf{89 monthly files} from
+February 2019 to June 2026, with a combined compressed size of
+\textbf{37.58 GB}. From this collection, a \textbf{12.00 GB}
+working dataset consisting of 26 files was selected. A smaller
+\textbf{3.36 GB} processing dataset consisting of 7 files was then
+defined for the distributed PySpark work in Part 2.
+
+These sizes satisfy the project requirements of 25--40 GB for the
+raw dataset, at least 12 GB for the working dataset and at least
+3 GB for the processing dataset. The three levels are shown in
+Table~\ref{tab:scale}.
+
+For Part 1, exploratory analysis was carried out in pandas using the
+June 2026 file. This monthly sample contains
+\textbf{20,775,868 rows and 25 columns}. The one-month EDA sample
+should not be confused with the 3.36 GB processing dataset, which
+will be used for the distributed analysis in Part 2.
+
+% ============================================================
+\section{Data quality and preparation}
+
+The original June 2026 data was kept unchanged and a separate copy
+was created for cleaning. Basic checks were first performed for
+missing values, duplicates and unusual numerical values.
+
+Several issues were found. There were \textbf{4,844 trips with zero
+distance}, \textbf{6,750 trips with a negative base fare} and
+\textbf{2 trips with a non-positive duration}. Some very large
+distance values were also present. No exact duplicate rows were
+found.
+
+Missing values were not equally distributed across the columns. For
+example, \texttt{originating\_base\_num} was missing for 26.45\% of
+the sample. This is important because missingness in individual
+fields can limit the types of comparisons that can be made.
+
+A set of simple plausibility rules was used for the analytical copy.
+Trips were retained where duration was greater than 0 and no more
+than 1,440 minutes, distance was greater than 0 and no more than
+100 miles, and base fare was between \$0 and \$500.
+
+After applying these rules, \textbf{14,421 records (0.07\%)} were
+excluded. The cleaned dataset therefore contained
+\textbf{20,761,447 trips}.
+
+There are also limitations that cleaning cannot solve. The data
+represents HVFHV activity rather than all transport in New York
+City, and the June 2026 EDA only represents one month. The results
+should therefore not be generalised to all NYC transport or to
+seasonal patterns without further analysis.
+
+% ============================================================
+\section{Exploratory data analysis}
+
+The cleaned June 2026 sample had an average trip distance of
+\textbf{4.98 miles} and an average trip duration of
+\textbf{20.36 minutes}. The median values were lower at 2.91 miles
+and 16.18 minutes respectively. The average base passenger fare was
+\textbf{\$28.75}, compared with a median of \$20.13.
+
+Trip distance and base fare had a strong positive correlation. The
+correlation was approximately \textbf{0.86} before cleaning and
+remained approximately \textbf{0.86} afterwards. This suggests that
+the relatively small number of excluded observations had little
+effect on the overall distance--fare relationship.
+
+Trip activity also varied by time. Saturday recorded
+\textbf{3,215,911 trips}, while Wednesday recorded
+\textbf{2,695,792}. Trip characteristics changed across the day as
+well. For example, trips starting around 05:00 averaged approximately
+7.13 miles, while trips at 15:00 averaged approximately 4.70 miles
+and 23.97 minutes. These differences show that trip demand and trip
+characteristics are not constant throughout the day or week.
+
+The spatial analysis also showed differences between locations.
+LaGuardia Airport was the largest pickup zone in the sample with
+\textbf{421,225 pickups}, followed by JFK Airport with
+\textbf{356,638}. At borough level, approximately 7.14 million
+pickups occurred in Manhattan, 5.72 million in Brooklyn, 4.77
+million in Queens, 2.79 million in the Bronx and 0.35 million in
+Staten Island.
+
+The operator field also allowed the sample to be compared by
+company. Uber accounted for approximately \textbf{73.4\%} of the
+June 2026 trips and Lyft for approximately \textbf{26.6\%}.
+Figures showing the main temporal and spatial results are included
+in the Appendix.
+
+% ============================================================
+\section{The 7 Vs of Big Data}
+
+\textit{[Partner section to be inserted here. The final version will
+discuss Volume, Velocity, Variety, Veracity, Variability,
+Visualization and Value using evidence from the HVFHV dataset.]}
+
+% ============================================================
+\section{Value and limitations}
+
+The HVFHV data can be useful for both operational and planning
+purposes. Hourly and daily trip patterns can help identify periods
+of high demand, while pickup-zone analysis can show where demand is
+concentrated. This could support decisions around driver or vehicle
+availability, airport demand and transport planning.
+
+The fare and driver-pay fields also make it possible to study the
+financial characteristics of trips, while operator codes allow
+comparisons between the major HVFHV services. Over a longer time
+period, the dataset could also be used to examine how mobility
+patterns change.
+
+There are, however, important limitations. The dataset does not
+represent all forms of transport in New York City. The records are
+also de-identified, which prevents analysis of individual riders or
+drivers over time. Location is provided through taxi-zone IDs rather
+than exact GPS coordinates, and some fields contain missing or
+unusual values. These limitations need to be considered when
+interpreting the results.
+
+% ============================================================
+\begin{thebibliography}{9}
+\small
+
+\bibitem{tlc}
+NYC Taxi \& Limousine Commission.
+\emph{TLC Trip Record Data}.
+\url{https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page}
+
+\bibitem{dict}
+NYC Taxi \& Limousine Commission.
+\emph{High Volume FHV Trip Records Data Dictionary}.
+\url{https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_hvfhs.pdf}
+
+\bibitem{opendata}
+NYC Open Data.
+\emph{Frequently Asked Questions}.
+\url{https://opendata.cityofnewyork.us/faq/}
+
+\end{thebibliography}
+
+% ============================================================
+\clearpage
+\appendix
+
+\section*{Appendix}
+
+\setcounter{table}{0}
+\renewcommand{\thetable}{A\arabic{table}}
+
+\setcounter{figure}{0}
+\renewcommand{\thefigure}{A\arabic{figure}}
+
+% ============================================================
+\begin{table*}[t]
+\centering
+\caption{Dataset sizes used in the project.}
+\label{tab:scale}
+
+\begin{tabular}{lrrl}
+\toprule
+\textbf{Dataset} &
+\textbf{Files} &
+\textbf{Size (GB)} &
+\textbf{Requirement} \\
+\midrule
+
+Raw &
+89 &
+37.58 &
+25--40 GB \checkmark \\
+
+Working &
+26 &
+12.00 &
+$\geq$ 12 GB \checkmark \\
+
+Processing &
+7 &
+3.36 &
+$\geq$ 3 GB \checkmark \\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+% ============================================================
+\begin{table*}[t]
+\centering
+\caption{Examples of fields available in the HVFHV dataset.}
+\label{tab:dict}
+\small
+
+\begin{tabular}{
+>{\raggedright\arraybackslash}p{4.2cm}
+>{\raggedright\arraybackslash}p{2.0cm}
+>{\raggedright\arraybackslash}p{9.6cm}
+}
+
+\toprule
+\textbf{Field} &
+\textbf{Type} &
+\textbf{Description} \\
+\midrule
+
+\texttt{hvfhs\_license\_num} &
+Categorical &
+High-volume for-hire service licence code \\
+
+Request / pickup / drop-off times &
+Temporal &
+Timestamps describing stages of a trip \\
+
+\texttt{PULocationID}, \texttt{DOLocationID} &
+Spatial &
+TLC taxi-zone identifiers for pickup and drop-off \\
+
+\texttt{trip\_miles}, \texttt{trip\_time} &
+Numeric &
+Trip distance and trip duration \\
+
+\texttt{base\_passenger\_fare} &
+Numeric &
+Base passenger fare recorded for the trip \\
+
+\texttt{driver\_pay}, \texttt{tips}, \texttt{tolls} &
+Numeric &
+Financial fields associated with the trip \\
+
+Shared/WAV flags &
+Categorical &
+Indicators relating to shared and wheelchair-accessible trips \\
+
+\bottomrule
+\end{tabular}
+\end{table*}
+
+% ============================================================
+\begin{figure*}[t]
+\centering
+
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{hvfhv_size_by_year.png}
+\caption{HVFHV dataset size by year.}
+\label{fig:size}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{distance_vs_fare_clean.png}
+\caption{Trip distance and base fare.}
+\label{fig:scatter}
+\end{minipage}
+
+\end{figure*}
+
+% ============================================================
+\begin{figure*}[t]
+\centering
+
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{trips_by_hour.png}
+\caption{Trips by pickup hour.}
+\label{fig:hour}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{trips_by_day.png}
+\caption{Trips by day of week.}
+\label{fig:day}
+\end{minipage}
+
+\end{figure*}
+
+% ============================================================
+\begin{figure*}[t]
+\centering
+
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{top_pickup_zones.png}
+\caption{Top pickup zones.}
+\label{fig:zones}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{pickups_by_borough.png}
+\caption{Pickups by borough.}
+\label{fig:borough}
+\end{minipage}
+
+\end{figure*}
+
+\end{document}
