@@ -1,0 +1,4 @@
+Dataset Level,Number of Files,Size (GB),Requirement,Requirement Met
+Raw,89,37.58,25-40 GB,True
+Working,26,12.0,>= 12 GB,True
+Processing,7,3.36,>= 3 GB,True

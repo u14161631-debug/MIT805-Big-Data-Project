@@ -1,0 +1,8 @@
+# MIT 805 Part 1 - HVFHV EDA notebook dependencies
+# Install with: pip install -r requirements.txt
+pandas>=2.0
+numpy>=1.24
+matplotlib>=3.7
+requests>=2.31
+pyarrow>=14.0        # Parquet engine for pandas.read_parquet
+jupyter>=1.0         # local notebook execution (not needed on Colab)

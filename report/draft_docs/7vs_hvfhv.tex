@@ -1,0 +1,91 @@
+% ============================================================================
+%  MIT 805 (2026) - Part 1, Section 5: The 7 Vs of Big Data
+%  Dataset: NYC TLC High-Volume For-Hire Vehicle (HVFHV) Trip Record Data
+%
+%  Preamble needs: \usepackage{booktabs}
+%                  \usepackage{microtype}   % recommended, absorbs long \texttt{}
+% ============================================================================
+
+\section{The 7 Vs of Big Data}
+\label{sec:7vs}
+
+The TLC High-Volume For-Hire Vehicle (HVFHV) records are a seven-year,
+individually resolved account of app-dispatched urban mobility.
+
+\begin{table}[htbp]
+\centering\footnotesize
+\caption{The 7 Vs applied to the NYC TLC HVFHV Trip Record Data}
+\label{tab:7vs}
+\begin{tabular}{@{}p{1.5cm}p{7.3cm}p{7.3cm}@{}}
+\toprule
+\textbf{V} & \textbf{Evidence in our dataset} & \textbf{Why it matters here} \\
+\midrule
+
+Volume &
+Raw 37.58\,GB across 89 monthly Parquet files (Feb 2019--Jun 2026); June 2026
+alone holds 20.78 million trips. &
+A single month is the practical ceiling for in-memory \texttt{pandas} work;
+the $\geq$12\,GB working and $\geq$3\,GB processing sets exceed it, so Part~2
+requires partitioned, distributed (PySpark) execution. \\
+\addlinespace
+
+Velocity &
+${\sim}692{,}500$ trips/day in June 2026 ($\approx$\,\textbf{8 dispatches/s});
+each record carries four event timestamps (request, on-scene, pickup,
+dropoff). &
+Fast at source but published monthly: the data suits month-partitioned batch
+ingestion and retrospective event-time analysis, not live dispatch. \\
+\addlinespace
+
+Variety &
+25 variables of mixed kind: timestamps; continuous measures
+(\texttt{trip\_miles}, \texttt{trip\_time}); money fields
+(\texttt{base\_passenger\_fare}, \texttt{driver\_pay}, \texttt{tips}); Y/N
+flags; license codes (Uber HV0003, Lyft HV0005); zone IDs
+(\texttt{PULocationID}/\texttt{DOLocationID}). &
+Heterogeneity drives pre-processing cost: the money fields are not comparable
+(fare excludes tolls/tips/taxes; \texttt{driver\_pay} is net of commission),
+flags and codes are categories, and zone IDs are meaningless until joined to
+the 265-zone lookup and shapefile. \\
+\addlinespace
+
+Veracity &
+TLC disclaims accuracy. June 2026 checks: 4{,}844 zero-distance, 6{,}750
+negative-fare and 2 non-positive-duration trips; 14{,}421 records
+(\textbf{0.07\%}) excluded, leaving 20{,}761{,}447. &
+The defects are systematic, not noise: negative fares (refunds/voids) flip the
+sign of fare aggregates, and zero-distance trips corrupt speed statistics, so
+records are filtered under a documented rule. \\
+\addlinespace
+
+Variability &
+\emph{Schema:} fare/\texttt{driver\_pay} columns added May 2022;
+\texttt{cbd\_congestion\_fee} only from Jan 2025. \emph{Behaviour:} mean
+distance 7.13\,mi at 05:00 vs 4.70\,mi at 15:00 (\textbf{+51.7\%}); Saturday
++19.3\% trips over Wednesday. &
+Neither schema nor behaviour stays constant: analyses are only valid where the
+columns exist, and one 89-month average would mix COVID-19, pre- and
+post-congestion-pricing periods, so results must be computed per period. \\
+\addlinespace
+
+Visualiz\-ation &
+Borough pickups (Manhattan 7.14m, Brooklyn 5.72m, Queens 4.77m, Bronx 2.79m,
+Staten Island 0.35m); hourly distance/duration profiles; LaGuardia 421{,}225
+vs JFK 356{,}638; Uber 73.4\%\,/\,Lyft 26.6\%; $265{\times}265$ OD matrix. &
+No reader can inspect 20.78m rows, so findings are delivered as graphics; the
+zero-distance and negative-fare defects were first visible as artefacts in the
+plotted distributions. \\
+\addlinespace
+
+Value &
+\texttt{driver\_pay}, \texttt{tips} and wait times support effective-earnings
+analysis; request-vs-match flags measure pooling and unmet
+wheelchair-accessible demand. \textbf{65.6\% of pickups occur outside
+Manhattan.} &
+Demand is strongest where the subway is weakest, informing transit-gap,
+curb-space and equity decisions; earnings fields quantify driver welfare; and
+the Jan 2025 congestion-fee column gives a natural before/after policy
+window. \\
+\bottomrule
+\end{tabular}
+\end{table}
