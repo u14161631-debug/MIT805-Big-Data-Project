@@ -1,7 +1,14 @@
-# MIT 805 Part 1 - HVFHV EDA notebook dependencies
+# MIT 805 Big Data project dependencies
 # Install with: pip install -r requirements.txt
+
+# Part 1: EDA / notebook tooling
 polars>=1.0          # Arrow-backed DataFrame engine with native Parquet reader
 numpy>=1.24
 matplotlib>=3.7
 requests>=2.31
 jupyter>=1.0         # local notebook execution (not needed on Colab)
+
+# Part 2: distributed processing with PySpark
+pyspark>=3.5.0
+pyarrow>=15.0
+pandas>=2.0
