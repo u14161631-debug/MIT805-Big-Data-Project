@@ -1,0 +1,13 @@
+area,period,trips,calendar_days,trips_per_day
+Airport,post,4433872,177,25050.124294
+Airport,pre,4663644,188,24806.617021
+CBD core,post,26432014,177,149333.412429
+CBD core,pre,27932693,188,148578.154255
+Manhattan islands,post,105424,177,595.615819
+Manhattan islands,pre,105643,188,561.930851
+Other Manhattan,post,17825538,177,100709.254237
+Other Manhattan,pre,18463301,188,98209.047872
+Outer boroughs (non-airport),post,69715612,177,393873.514124
+Outer boroughs (non-airport),pre,69913638,188,371881.053191
+Unknown/outside,post,4789,177,27.056497
+Unknown/outside,pre,4803,188,25.547872

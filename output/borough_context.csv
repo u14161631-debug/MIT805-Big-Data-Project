@@ -1,0 +1,7 @@
+borough_context,period,count,calendar_days,trips_per_day
+Manhattan,post,44362976,177,250638.282486
+Manhattan,pre,46501637,188,247349.132979
+Outer boroughs,post,74149479,177,418923.610169
+Outer boroughs,pre,74577269,188,396687.601064
+Unknown/outside,post,4794,177,27.084746
+Unknown/outside,pre,4816,188,25.617021

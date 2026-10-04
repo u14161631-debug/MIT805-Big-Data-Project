@@ -1,0 +1,5 @@
+area,period,n_fare_distance,pearson_distance_fare
+CBD core,post,26424932,0.849017
+CBD core,pre,27922674,0.835652
+Outer boroughs (non-airport),post,69702297,0.868341
+Outer boroughs (non-airport),pre,69896836,0.86845

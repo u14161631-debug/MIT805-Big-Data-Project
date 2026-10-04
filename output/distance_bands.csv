@@ -1,0 +1,13 @@
+area,period,distance_band,trips,avg_fare,avg_pay,n_pay
+CBD core,post,0–2 miles,9787406,17.182153,10.396685,9787402
+CBD core,pre,0–2 miles,10132713,16.770313,11.195953,10132710
+CBD core,post,2–5 miles,8467076,27.642499,18.374413,8467073
+CBD core,pre,2–5 miles,9054408,27.522263,18.898158,9054407
+CBD core,post,5–100 miles,8170450,57.908964,41.286843,8170343
+CBD core,pre,5–100 miles,8735553,56.858734,41.332879,8735401
+Outer boroughs (non-airport),post,0–2 miles,25850627,10.688964,7.442824,25850621
+Outer boroughs (non-airport),pre,0–2 miles,24663311,10.604371,7.627594,24663306
+Outer boroughs (non-airport),post,2–5 miles,24578546,19.044719,15.480839,24578537
+Outer boroughs (non-airport),pre,2–5 miles,24863942,18.887943,15.148431,24863937
+Outer boroughs (non-airport),post,5–100 miles,19273124,38.797036,33.736615,19272773
+Outer boroughs (non-airport),pre,5–100 miles,20369583,38.146784,33.368813,20368513
